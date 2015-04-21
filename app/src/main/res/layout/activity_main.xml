@@ -1,0 +1,45 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingTop="@dimen/log_padding_vertical"
+    android:paddingBottom="@dimen/log_padding_vertical"
+    android:paddingLeft="@dimen/log_padding_horizontal"
+    android:paddingRight="@dimen/log_padding_horizontal">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity"
+        android:layout_above="@+id/divider">
+
+        <TextView
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/log_text_size"
+            android:lineSpacingMultiplier="2.0"
+            tools:ignore="UnusedAttribute" />
+
+    </ScrollView>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#33000000"
+        android:layout_marginBottom="@dimen/divider_margin_bottom"
+        android:layout_above="@+id/input" />
+
+    <EditText
+        android:id="@+id/input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/input_text_size"
+        android:fontFamily="sans-serif-light"
+        tools:ignore="UnusedAttribute"
+        android:hint="@string/input_hint"
+        android:layout_alignParentBottom="true"
+        android:singleLine="true" />
+
+</RelativeLayout>
