@@ -88,7 +88,7 @@ public class Terminal extends Base {
 
     public synchronized Terminal ready(NeuronFuture<Terminal> future) {
         mReadyCallback = future;
-        if (mServerThread == null || !isRunning())
+        if (!isRunning())
             createServerThread();
         else if (mServerSocket != null && !mServerSocket.isClosed() && future != null)
             future.on(Terminal.this, null);
@@ -97,7 +97,7 @@ public class Terminal extends Base {
 
     public synchronized Terminal axon(NeuronFuture<Axon> future) {
         mAxonCallback = future;
-        if (mServerThread == null || !isRunning())
+        if (!isRunning())
             createServerThread();
         return this;
     }
@@ -118,7 +118,7 @@ public class Terminal extends Base {
     }
 
     public synchronized final boolean isRunning() {
-        return mIsReady;
+        return mServerThread != null && mIsReady;
     }
 
     public synchronized boolean isAcceptingClients() {
