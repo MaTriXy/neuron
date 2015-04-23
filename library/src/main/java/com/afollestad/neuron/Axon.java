@@ -27,7 +27,7 @@ public class Axon extends Base {
     private OutputStream mOutput;
     private ConnectionThread conn;
     private CommunicationThread comm;
-    private boolean mRunning = true;
+    private boolean mAllowRun;
     private NeuronFuture<Axon> mConnectionFuture;
     private final Map<Integer, NeuronFuture2<Axon, ? extends Electron>> mReceiveFutures;
     private int mReceiveFutureCounter;
@@ -123,14 +123,14 @@ public class Axon extends Base {
             comm.end();
         if (mPort > 0)
             mNeuron.nullifyAxon();
-        mRunning = false;
+        mAllowRun = false;
     }
 
     public synchronized Axon connection(NeuronFuture<Axon> future) {
         if (getId() > 0)
             throw new IllegalStateException("Server Axons do not accept a connection callback.");
         mConnectionFuture = future;
-        if (conn == null || !mRunning)
+        if (!isConnected())
             startConnection();
         return this;
     }
@@ -140,7 +140,7 @@ public class Axon extends Base {
             future.CLASS = cls;
             incrementCounter();
             mReceiveFutures.put(mReceiveFutureCounter, future);
-            if ((conn == null || !mRunning) && getId() <= 0)
+            if (!isConnected() && getId() <= 0)
                 startConnection();
         }
         return this;
@@ -149,6 +149,10 @@ public class Axon extends Base {
     public synchronized Axon disconnection(NeuronFuture<Axon> future) {
         mDisconnectionFuture = future;
         return this;
+    }
+
+    public final boolean isConnected() {
+        return conn != null && mAllowRun;
     }
 
     class ConnectionThread implements Runnable {
@@ -162,10 +166,11 @@ public class Axon extends Base {
         @Override
         public void run() {
             try {
+                mAllowRun = true;
                 mSocket = new Socket("localhost", mPort);
                 mInput = mSocket.getInputStream();
                 mOutput = mSocket.getOutputStream();
-                if (!mRunning) {
+                if (!mAllowRun) {
                     mOutput.close();
                     mInput.close();
                     mSocket.close();
@@ -175,6 +180,7 @@ public class Axon extends Base {
                 startCommunciationThread();
                 Logger.v(Axon.this, "Axon connected to server on port " + mPort);
             } catch (IOException e) {
+                mAllowRun = false;
                 Logger.e(Axon.this, "Failed to start the connection: " + e.getLocalizedMessage());
                 invoke(mConnectionFuture, Axon.this, e);
             }
@@ -194,7 +200,7 @@ public class Axon extends Base {
         }
 
         public void end() {
-            mRunning = false;
+            mAllowRun = false;
             if (!Thread.currentThread().isInterrupted())
                 Thread.currentThread().interrupt();
             if (mSocket != null) {
@@ -273,11 +279,11 @@ public class Axon extends Base {
                 e.printStackTrace();
             }
 
-            mRunning = true;
+            mAllowRun = true;
             if (mServer != null)
                 invoke(mServer.mAxonCallback, Axon.this, null);
 
-            while (!mSocket.isClosed() && mRunning && !Thread.currentThread().isInterrupted()) {
+            while (!mSocket.isClosed() && mAllowRun && !Thread.currentThread().isInterrupted()) {
                 try {
                     Logger.v(Axon.this, "Attempting to receive " + mNextExpectedLength + " bytes...");
                     byte[] received = new byte[mNextExpectedLength];
@@ -306,13 +312,13 @@ public class Axon extends Base {
                         Logger.e(Axon.this, "Failed to send connection check message.");
                     }
                 } catch (IOException e) {
-                    if (mSocket.isClosed() || !mRunning || Thread.currentThread().isInterrupted())
+                    if (mSocket.isClosed() || !isConnected() || Thread.currentThread().isInterrupted())
                         break;
                     Logger.e(Axon.this, "Failed to read from the input stream: " + e.getLocalizedMessage());
                 }
             }
 
-            mRunning = false;
+            mAllowRun = false;
             Logger.v(Axon.this, "Communication thread (mId = " + mId + ") quit");
             if (mServer != null) {
                 synchronized (mServer.mConnections) {

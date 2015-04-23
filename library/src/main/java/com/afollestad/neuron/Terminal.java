@@ -28,11 +28,10 @@ public class Terminal extends Base {
     protected final HashMap<Integer, Axon> mConnections;
     protected NeuronFuture<Axon> mAxonCallback;
     protected NeuronFuture<Terminal> mReadyCallback;
-    protected boolean mRunning = true;
     private boolean mIsReady = false;
 
     private void createServerThread() {
-        mRunning = true;
+        mIsReady = true;
         mServerThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -44,9 +43,9 @@ public class Terminal extends Base {
                     invoke(mReadyCallback, Terminal.this, e);
                     return;
                 }
-                mIsReady = true;
+
                 invoke(mReadyCallback, Terminal.this, null);
-                while (!mServerSocket.isClosed() && mRunning && !Thread.currentThread().isInterrupted()) {
+                while (!mServerSocket.isClosed() && isRunning() && !Thread.currentThread().isInterrupted()) {
                     try {
                         int id;
                         synchronized (mConnections) {
@@ -58,14 +57,13 @@ public class Terminal extends Base {
                         final OutputStream os = socket.getOutputStream();
                         onConnection(id, socket, is, os);
                     } catch (IOException e) {
-                        if (mServerSocket.isClosed() || !mRunning || Thread.currentThread().isInterrupted())
+                        if (mServerSocket.isClosed() || !isRunning() || Thread.currentThread().isInterrupted())
                             break;
                         Logger.e(Terminal.this, "Failed to accept client: " + e.getLocalizedMessage());
                         invoke(mAxonCallback, null, e);
                     }
                 }
 
-                mRunning = false;
                 mIsReady = false;
                 Logger.d(Terminal.this, "Server thread quit");
                 if (!mServerSocket.isClosed()) {
@@ -90,7 +88,7 @@ public class Terminal extends Base {
 
     public synchronized Terminal ready(NeuronFuture<Terminal> future) {
         mReadyCallback = future;
-        if (mServerThread == null || !mRunning)
+        if (mServerThread == null || !isRunning())
             createServerThread();
         else if (mServerSocket != null && !mServerSocket.isClosed() && future != null)
             future.on(Terminal.this, null);
@@ -99,7 +97,7 @@ public class Terminal extends Base {
 
     public synchronized Terminal axon(NeuronFuture<Axon> future) {
         mAxonCallback = future;
-        if (mServerThread == null || !mRunning)
+        if (mServerThread == null || !isRunning())
             createServerThread();
         return this;
     }
@@ -119,17 +117,17 @@ public class Terminal extends Base {
         createServerThread();
     }
 
-    public synchronized final boolean isReady() {
+    public synchronized final boolean isRunning() {
         return mIsReady;
     }
 
     public synchronized boolean isAcceptingClients() {
-        return mRunning && !mServerThread.isInterrupted() &&
+        return isRunning() && !mServerThread.isInterrupted() &&
                 (mServerSocket == null || mServerSocket.isClosed());
     }
 
     public synchronized void endAcceptingClients() {
-        mRunning = false;
+        mIsReady = false;
         if (mServerThread != null)
             mServerThread.interrupt();
         if (mServerSocket != null) {

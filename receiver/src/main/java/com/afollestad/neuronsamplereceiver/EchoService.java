@@ -76,7 +76,7 @@ public class EchoService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (Neuron.with(PORT).terminal().isReady()) {
+        if (Neuron.with(PORT).terminal().isRunning()) {
             sendBroadcast(new Intent(READY_ACTION));
             Toast.makeText(getApplicationContext(), "Terminal is already ready", Toast.LENGTH_SHORT).show();
         }
