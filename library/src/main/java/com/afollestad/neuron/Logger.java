@@ -15,7 +15,7 @@ class Logger {
 
     private static String getTag(Object context) {
         if (context instanceof Axon)
-            return context.toString();
+            return "Axon:" + ((Axon) context).getId();
         if (context instanceof Class)
             return ((Class) context).getSimpleName();
         else return context.getClass().getSimpleName();

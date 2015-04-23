@@ -96,6 +96,7 @@ class ElectronParser {
         }
 
         Logger.v(ElectronParser.class, "Received " + classHeader + " object.");
+        thread.trimBuffer();
         return new Result(json, classHeader, id);
     }
 

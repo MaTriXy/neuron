@@ -196,6 +196,18 @@ public class Axon extends Base {
             }
         }
 
+        protected void trimBuffer() {
+            int length = mBuilder.length();
+            for (int i = mBuilder.length() - 1; i >= 0; i--) {
+                char c = mBuilder.charAt(i);
+                if (c == '\0' || Character.isWhitespace(c))
+                    length--;
+                else break;
+            }
+            if (length < mBuilder.length())
+                mBuilder.setLength(length);
+        }
+
         private synchronized void checkReceiveReady() {
             synchronized (mReceiveFutures) {
                 if (mBuilder.length() == 0)
@@ -236,18 +248,6 @@ public class Axon extends Base {
             }
         }
 
-        private void trim(StringBuilder sb) {
-            int length = sb.length();
-            for (int i = sb.length() - 1; i >= 0; i--) {
-                char c = sb.charAt(i);
-                if (c == '\0' || Character.isWhitespace(c))
-                    length--;
-                else break;
-            }
-            if (length < sb.length())
-                sb.setLength(length);
-        }
-
         @Override
         public void run() {
             if (mInput == null)
@@ -278,7 +278,7 @@ public class Axon extends Base {
                         }
 
                         mBuilder.append(receivedStr);
-                        trim(mBuilder);
+                        trimBuffer();
                         checkReceiveReady();
                     } else if (readCount == -1) {
                         Logger.d(Axon.this, "Received -1 bytes, connection is closed (mId = " + mId + ")");
