@@ -92,8 +92,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String msg = mInput.getText().toString().trim();
                 log("[SEND]: " + msg);
-                for (int i = 0; i < 3000; i++)
-                    msg += mInput.getText().toString().trim();
                 mAxon.transmit(new Message(msg), new NeuronFuture3<Axon, Message>() {
                     @Override
                     public void on(Axon parent, Message result, Exception e) {
