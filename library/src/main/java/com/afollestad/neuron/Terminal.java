@@ -32,6 +32,7 @@ public class Terminal extends Base {
     private boolean mIsReady = false;
 
     private void createServerThread() {
+        mRunning = true;
         mServerThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -63,6 +64,8 @@ public class Terminal extends Base {
                         invoke(mAxonCallback, null, e);
                     }
                 }
+
+                mRunning = false;
                 mIsReady = false;
                 Logger.d(Terminal.this, "Server thread quit");
                 if (!mServerSocket.isClosed()) {
@@ -87,7 +90,7 @@ public class Terminal extends Base {
 
     public synchronized Terminal ready(NeuronFuture<Terminal> future) {
         mReadyCallback = future;
-        if (mServerThread == null)
+        if (mServerThread == null || !mRunning)
             createServerThread();
         else if (mServerSocket != null && !mServerSocket.isClosed() && future != null)
             future.on(Terminal.this, null);
@@ -96,7 +99,7 @@ public class Terminal extends Base {
 
     public synchronized Terminal axon(NeuronFuture<Axon> future) {
         mAxonCallback = future;
-        if (mServerThread == null)
+        if (mServerThread == null || !mRunning)
             createServerThread();
         return this;
     }

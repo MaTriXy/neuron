@@ -122,7 +122,7 @@ public class Axon extends Base {
         if (comm != null)
             comm.end();
         if (mPort > 0)
-            Neuron.with(mPort).nullifyAxon();
+            mNeuron.nullifyAxon();
         mRunning = false;
     }
 
@@ -130,7 +130,7 @@ public class Axon extends Base {
         if (getId() > 0)
             throw new IllegalStateException("Server Axons do not accept a connection callback.");
         mConnectionFuture = future;
-        if (conn == null)
+        if (conn == null || !mRunning)
             startConnection();
         return this;
     }
@@ -140,7 +140,7 @@ public class Axon extends Base {
             future.CLASS = cls;
             incrementCounter();
             mReceiveFutures.put(mReceiveFutureCounter, future);
-            if (conn == null && getId() <= 0)
+            if ((conn == null || !mRunning) && getId() <= 0)
                 startConnection();
         }
         return this;
@@ -273,6 +273,7 @@ public class Axon extends Base {
                 e.printStackTrace();
             }
 
+            mRunning = true;
             if (mServer != null)
                 invoke(mServer.mAxonCallback, Axon.this, null);
 
@@ -311,6 +312,7 @@ public class Axon extends Base {
                 }
             }
 
+            mRunning = false;
             Logger.v(Axon.this, "Communication thread (mId = " + mId + ") quit");
             if (mServer != null) {
                 synchronized (mServer.mConnections) {
