@@ -38,7 +38,8 @@ class ElectronParser {
         final String params = builder.substring(paramsStart, paramsEnd);
         final String[] splitParams = params.split(",");
 
-        final int headerLiteralLength = builder.substring(headerStart, paramsEnd + 2).length();
+        final int headerLiteralLength = paramsEnd + 2 - headerStart;
+
         int lengthHeader = -1;
         String classHeader = null;
         int id = -1;
