@@ -23,6 +23,8 @@ public class Neuron {
     }
 
     public static Neuron with(int port) {
+        if (port < 0)
+            throw new IllegalArgumentException("The port cannot be less than 0.");
         if (mSingletons == null)
             mSingletons = new HashMap<>();
         if (mSingletons.containsKey(port))
@@ -39,6 +41,8 @@ public class Neuron {
     }
 
     public synchronized Axon axon() {
+        if (mPort < 1)
+            throw new IllegalArgumentException("Axons cannot be created on ports less than 1.");
         if (mAxon == null)
             mAxon = new Axon(this);
         return mAxon;
@@ -56,8 +60,18 @@ public class Neuron {
         }
     }
 
-    public final static void setLoggingEnabled(boolean enabled) {
+    public static void setLoggingEnabled(boolean enabled) {
         Logger.setEnabled(enabled);
+    }
+
+    protected void nullifyAxon() {
+        mAxon = null;
+        Logger.v(Neuron.this, "Axon nullified.");
+    }
+
+    protected void nullifyTerminal() {
+        mTerminal = null;
+        Logger.v(Neuron.this, "Terminal nullified.");
     }
 
     public static void endAll() {

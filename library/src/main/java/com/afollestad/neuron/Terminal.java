@@ -145,6 +145,8 @@ public class Terminal extends Base {
                 mConnections.get(key).end();
             mConnections.clear();
         }
+        if (mNeuron != null)
+            mNeuron.nullifyTerminal();
     }
 
     @Override

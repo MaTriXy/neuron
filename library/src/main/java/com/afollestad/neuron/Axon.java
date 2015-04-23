@@ -20,6 +20,7 @@ public class Axon extends Base {
 
     private int mId;
     private int mPort;
+    private Neuron mNeuron;
     private Terminal mServer;
     private Socket mSocket;
     private InputStream mInput;
@@ -40,6 +41,7 @@ public class Axon extends Base {
 
     protected Axon(Neuron neuron, int id, Socket socket, Terminal server, InputStream is, OutputStream os) {
         this(neuron.mHandler, id);
+        mNeuron = neuron;
         mSocket = socket;
         mServer = server;
         mInput = is;
@@ -49,6 +51,7 @@ public class Axon extends Base {
 
     protected Axon(Neuron neuron) {
         this(neuron.mHandler, -1);
+        mNeuron = neuron;
         mPort = neuron.mPort;
     }
 
@@ -57,6 +60,7 @@ public class Axon extends Base {
     }
 
     private void startConnection() {
+        Logger.v(Axon.this, "Starting connection over port " + mPort);
         conn = new ConnectionThread(mPort);
         new Thread(conn).start();
     }
@@ -117,6 +121,8 @@ public class Axon extends Base {
     public synchronized void end() {
         if (comm != null)
             comm.end();
+        if (mPort > 0)
+            Neuron.with(mPort).nullifyAxon();
         mRunning = false;
     }
 
@@ -159,7 +165,13 @@ public class Axon extends Base {
                 mSocket = new Socket("localhost", mPort);
                 mInput = mSocket.getInputStream();
                 mOutput = mSocket.getOutputStream();
-                if (!mRunning) return;
+                if (!mRunning) {
+                    mOutput.close();
+                    mInput.close();
+                    mSocket.close();
+                    Logger.v(Axon.this, "No longer running, connection thread cancelled.");
+                    return;
+                }
                 startCommunciationThread();
                 Logger.v(Axon.this, "Axon connected to server on port " + mPort);
             } catch (IOException e) {
