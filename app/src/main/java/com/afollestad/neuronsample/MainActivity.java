@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        stopService(getServiceIntent());
+        stopService(getServiceIntent());
         try {
             unregisterReceiver(mReceiver);
         } catch (Exception ignored) {
