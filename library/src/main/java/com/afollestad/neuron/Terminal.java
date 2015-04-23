@@ -29,6 +29,7 @@ public class Terminal extends Base {
     protected NeuronFuture<Axon> mAxonCallback;
     protected NeuronFuture<Terminal> mReadyCallback;
     private boolean mIsReady = false;
+    private int mConnectionCounter;
 
     private void createServerThread() {
         mIsReady = true;
@@ -49,9 +50,11 @@ public class Terminal extends Base {
                     try {
                         int id;
                         synchronized (mConnections) {
-                            id = mConnections.size() + 1;
+                            if (mConnectionCounter == Integer.MAX_VALUE)
+                                mConnectionCounter = 0;
+                            mConnectionCounter++;
+                            id = mConnectionCounter;
                         }
-                        Logger.v(Terminal.this, "Waiting for another client (id = " + (id + 1) + ")...");
                         final Socket socket = mServerSocket.accept();
                         final InputStream is = socket.getInputStream();
                         final OutputStream os = socket.getOutputStream();

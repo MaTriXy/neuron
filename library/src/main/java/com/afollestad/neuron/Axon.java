@@ -268,7 +268,7 @@ public class Axon extends Base {
             invoke(mConnectionFuture, Axon.this, null);
 
             try {
-                mSocket.setSoTimeout(10000);
+                mSocket.setSoTimeout(30000);
             } catch (SocketException e) {
                 e.printStackTrace();
             }

@@ -82,8 +82,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        startService(getServiceIntent());
         registerReceiver(mReceiver, new IntentFilter(READY_ACTION));
+        startService(getServiceIntent());
 
         log = (TextView) findViewById(R.id.content);
 
