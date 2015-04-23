@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,22 +75,24 @@ public class Axon extends Base {
         }
     }
 
+    private void write(String data) throws Exception {
+        final byte[] bytes = data.getBytes("UTF-8");
+        mOutput.write(bytes);
+        mOutput.flush();
+    }
+
     public synchronized void transmit(Electron obj) throws Exception {
         if (mOutput == null)
             return;
         final String str = ElectronParser.generateMessage(obj, -1);
-        final byte[] bytes = str.getBytes("UTF-8");
-        mOutput.write(bytes);
-        mOutput.flush();
+        write(str);
     }
 
     public synchronized void reply(Electron replyTo, Electron response) throws Exception {
         if (mOutput == null)
             return;
         final String str = ElectronParser.generateMessage(response, replyTo.ID);
-        final byte[] bytes = str.getBytes("UTF-8");
-        mOutput.write(bytes);
-        mOutput.flush();
+        write(str);
     }
 
     public synchronized void transmit(Electron obj, NeuronFuture3<Axon, ? extends Electron> future) {
@@ -183,6 +187,8 @@ public class Axon extends Base {
                 Thread.currentThread().interrupt();
             if (mSocket != null) {
                 try {
+                    mSocket.shutdownOutput();
+                    mSocket.shutdownInput();
                     mSocket.close();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -248,6 +254,13 @@ public class Axon extends Base {
                 return;
             Logger.v(Axon.this, "Communication thread (mId = " + mId + ") started");
             invoke(mConnectionFuture, Axon.this, null);
+
+            try {
+                mSocket.setSoTimeout(10000);
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+
             if (mServer != null)
                 invoke(mServer.mAxonCallback, Axon.this, null);
 
@@ -259,12 +272,25 @@ public class Axon extends Base {
                     if (readCount > 0) {
                         Logger.v(Axon.this, "Received " + readCount + " bytes.");
                         String receivedStr = new String(received, 0, readCount, "UTF-8");
+                        if (receivedStr.length() == 1 && receivedStr.equals("\0")) {
+                            Logger.v(Axon.this, "Received connection check character. Ignoring.");
+                            continue;
+                        }
+
                         mBuilder.append(receivedStr);
                         trim(mBuilder);
                         checkReceiveReady();
                     } else if (readCount == -1) {
                         Logger.d(Axon.this, "Received -1 bytes, connection is closed (mId = " + mId + ")");
                         break;
+                    }
+                } catch (SocketTimeoutException e) {
+                    Logger.v(Axon.this, "Haven't received anything for 10 seconds, sending connection check.");
+                    try {
+                        write("\0");
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                        Logger.e(Axon.this, "Failed to send connection check message.");
                     }
                 } catch (IOException e) {
                     if (mSocket.isClosed() || !mRunning || Thread.currentThread().isInterrupted())
@@ -302,8 +328,11 @@ public class Axon extends Base {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof Axon))
-            return false;
-        return ((Axon) obj).mId == mId;
+        return obj instanceof Axon && ((Axon) obj).mId == mId;
+    }
+
+    @Override
+    public String toString() {
+        return "(Axon) id = " + mId;
     }
 }

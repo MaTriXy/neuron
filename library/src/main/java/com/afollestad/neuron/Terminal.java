@@ -47,13 +47,15 @@ public class Terminal extends Base {
                 invoke(mReadyCallback, Terminal.this, null);
                 while (!mServerSocket.isClosed() && mRunning && !Thread.currentThread().isInterrupted()) {
                     try {
+                        int id;
                         synchronized (mConnections) {
-                            final int id = mConnections.size() + 1;
-                            final Socket socket = mServerSocket.accept();
-                            final InputStream is = socket.getInputStream();
-                            final OutputStream os = socket.getOutputStream();
-                            onConnection(id, socket, is, os);
+                            id = mConnections.size() + 1;
                         }
+                        Logger.v(Terminal.this, "Waiting for another client (id = " + (id + 1) + ")...");
+                        final Socket socket = mServerSocket.accept();
+                        final InputStream is = socket.getInputStream();
+                        final OutputStream os = socket.getOutputStream();
+                        onConnection(id, socket, is, os);
                     } catch (IOException e) {
                         if (mServerSocket.isClosed() || !mRunning || Thread.currentThread().isInterrupted())
                             break;
@@ -79,7 +81,7 @@ public class Terminal extends Base {
         synchronized (mConnections) {
             Axon axon = new Axon(mNeuron, id, socket, this, is, os);
             mConnections.put(id, axon);
-            Logger.d(Terminal.this, "New connection (id = " + id + "): " + socket.getInetAddress());
+            Logger.d(Terminal.this, "New client (id = " + id + "): " + socket.getInetAddress());
         }
     }
 

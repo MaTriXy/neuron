@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
                             } else {
                                 log("[CONNECTED].");
                                 mInput.setEnabled(true);
+                                mSend.setEnabled(true);
                             }
                         }
                     })
@@ -105,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
                 mInput.setText("");
             }
         });
+        mSend.setEnabled(false);
 
         mInput = (EditText) findViewById(R.id.input);
         mInput.setImeActionLabel(getString(R.string.transmit), EditorInfo.IME_ACTION_SEND);
@@ -124,11 +126,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopService(getServiceIntent());
+//        stopService(getServiceIntent());
         try {
             unregisterReceiver(mReceiver);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
     }
 }
