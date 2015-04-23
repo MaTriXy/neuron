@@ -61,7 +61,8 @@ public class Axon extends Base {
 
     private void startConnection() {
         Logger.v(Axon.this, "Starting connection over port " + mPort);
-        conn = new ConnectionThread(mPort);
+        mAllowRun = true;
+        conn = new ConnectionThread();
         new Thread(conn).start();
     }
 
@@ -157,16 +158,9 @@ public class Axon extends Base {
 
     class ConnectionThread implements Runnable {
 
-        protected int mPort;
-
-        public ConnectionThread(int port) {
-            mPort = port;
-        }
-
         @Override
         public void run() {
             try {
-                mAllowRun = true;
                 mSocket = new Socket("localhost", mPort);
                 mInput = mSocket.getInputStream();
                 mOutput = mSocket.getOutputStream();
