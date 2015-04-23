@@ -27,6 +27,7 @@ public class EchoService extends Service {
     private final NeuronFuture<Terminal> mReadyCallback = new NeuronFuture<Terminal>() {
         @Override
         protected void on(Terminal result, Exception e) {
+            Toast.makeText(EchoService.this, "Terminal running on port " + PORT, Toast.LENGTH_SHORT).show();
             sendBroadcast(new Intent(READY_ACTION));
         }
     };
@@ -60,6 +61,7 @@ public class EchoService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Neuron.endAll();
         Neuron.with(PORT)
                 .terminal()
                 .ready(mReadyCallback)
@@ -69,13 +71,15 @@ public class EchoService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Neuron.with(PORT)
-                .terminal()
-                .end();
+        Neuron.endAll();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (Neuron.with(PORT).terminal().isReady())
+            sendBroadcast(new Intent(READY_ACTION));
+        else
+            Toast.makeText(getApplicationContext(), "Terminal is not yet ready", Toast.LENGTH_SHORT).show();
         return START_STICKY;
     }
 }

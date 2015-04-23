@@ -56,6 +56,10 @@ public class Neuron {
         }
     }
 
+    public final static void setLoggingEnabled(boolean enabled) {
+        Logger.setEnabled(enabled);
+    }
+
     public static void endAll() {
         if (mSingletons == null)
             return;

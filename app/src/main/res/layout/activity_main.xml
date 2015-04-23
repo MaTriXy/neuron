@@ -2,23 +2,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="@dimen/log_padding_vertical"
     android:paddingBottom="@dimen/log_padding_vertical"
     android:paddingLeft="@dimen/log_padding_horizontal"
-    android:paddingRight="@dimen/log_padding_horizontal">
+    android:paddingRight="@dimen/log_padding_horizontal"
+    android:paddingTop="@dimen/log_padding_vertical">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MainActivity"
-        android:layout_above="@+id/divider">
+        android:layout_above="@+id/divider"
+        tools:context=".MainActivity">
 
         <TextView
             android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/log_text_size"
             android:lineSpacingMultiplier="2.0"
+            android:textSize="@dimen/log_text_size"
             tools:ignore="UnusedAttribute" />
 
     </ScrollView>
@@ -27,19 +27,43 @@
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#33000000"
+        android:layout_above="@+id/inputFrame"
         android:layout_marginBottom="@dimen/divider_margin_bottom"
-        android:layout_above="@+id/input" />
+        android:background="#33000000" />
 
-    <EditText
-        android:id="@+id/input"
+    <RelativeLayout
+        android:id="@+id/inputFrame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/input_text_size"
-        android:fontFamily="sans-serif-light"
-        tools:ignore="UnusedAttribute"
-        android:hint="@string/input_hint"
         android:layout_alignParentBottom="true"
-        android:singleLine="true" />
+        tools:ignore="UnusedAttribute">
+
+        <EditText
+            android:id="@+id/input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toLeftOf="@+id/sendButton"
+            android:layout_toStartOf="@+id/sendButton"
+            android:fontFamily="sans-serif-light"
+            android:hint="@string/input_hint"
+            android:singleLine="true"
+            android:textSize="@dimen/input_text_size" />
+
+        <Button
+            android:id="@+id/sendButton"
+            style="?buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/transmit"
+            android:textSize="@dimen/input_text_size" />
+
+    </RelativeLayout>
 
 </RelativeLayout>

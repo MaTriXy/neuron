@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Neuron Demo</string>
-    <string name="input_hint">Type something and press enter…</string>
-    <string name="send">Send</string>
+    <string name="input_hint">Type something…</string>
+    <string name="transmit">Transmit</string>
 </resources>

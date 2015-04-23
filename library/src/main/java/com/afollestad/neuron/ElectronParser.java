@@ -25,19 +25,20 @@ class ElectronParser {
         public final int ID;
     }
 
-    public static Result parse(StringBuilder mBuilder) {
+    public static Result parse(StringBuilder builder, Axon.CommunicationThread thread) {
 //        StringBuilder mBuilder = new StringBuilder("\0[Header/length=5]\0HelloTest");
-        final int headerStart = mBuilder.indexOf("\0[Header/");
+        final int headerStart = builder.indexOf("\0[Header/");
         if (headerStart == -1) {
             Logger.d(ElectronParser.class, "No header found in this message, waiting for more.");
             return null;
         }
 
         final int paramsStart = headerStart + 9;
-        final int paramsEnd = mBuilder.indexOf("]\0", paramsStart);
-        final String params = mBuilder.substring(paramsStart, paramsEnd);
+        final int paramsEnd = builder.indexOf("]\0", paramsStart);
+        final String params = builder.substring(paramsStart, paramsEnd);
         final String[] splitParams = params.split(",");
 
+        final int headerLiteralLength = builder.substring(headerStart, paramsEnd + 2).length();
         int lengthHeader = -1;
         String classHeader = null;
         int id = -1;
@@ -69,13 +70,23 @@ class ElectronParser {
 
         final int contentStart = paramsEnd + 2;
         final int contentEnd = contentStart + lengthHeader;
-        if (contentEnd > mBuilder.length()) {
+        if (contentEnd > builder.length()) {
             Logger.e(ElectronParser.class, "Content size doesn't match length header, waiting for more.");
+            thread.mNextExpectedLength = headerLiteralLength + lengthHeader;
+            Logger.v(ElectronParser.class, "Header text length: " + headerLiteralLength +
+                    ", length header: " + lengthHeader + ", expected length: " + thread.mNextExpectedLength);
+            if (thread.mNextExpectedLength > Axon.CommunicationThread.MAX_EXPECTED_LENGTH) {
+                Logger.v(ElectronParser.class, "Expected length is too large, reducing to max.");
+                thread.mNextExpectedLength = Axon.CommunicationThread.MAX_EXPECTED_LENGTH;
+            }
             return null;
         }
 
-        final String content = mBuilder.substring(contentStart, contentEnd);
-        mBuilder.delete(headerStart, contentEnd);
+        // Reset expected length to optimize memory usage again
+        thread.mNextExpectedLength = Axon.CommunicationThread.DEFAULT_EXPECTED_LENGTH;
+
+        final String content = builder.substring(contentStart, contentEnd);
+        builder.delete(headerStart, contentEnd);
 
         JSONObject json = null;
         try {

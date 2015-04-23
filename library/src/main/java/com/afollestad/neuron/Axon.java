@@ -165,9 +165,13 @@ public class Axon extends Base {
         }
     }
 
-    class CommunicationThread implements Runnable {
+    protected class CommunicationThread implements Runnable {
 
-        private StringBuilder mBuilder;
+        protected static final int DEFAULT_EXPECTED_LENGTH = 2048;
+        protected static final int MAX_EXPECTED_LENGTH = 5012;
+
+        private final StringBuilder mBuilder;
+        protected int mNextExpectedLength = DEFAULT_EXPECTED_LENGTH;
 
         public CommunicationThread() {
             mBuilder = new StringBuilder();
@@ -194,7 +198,7 @@ public class Axon extends Base {
                     Logger.d(Axon.this, "No receival futures available to send receival callback.");
                     return;
                 }
-                ElectronParser.Result result = ElectronParser.parse(mBuilder);
+                ElectronParser.Result result = ElectronParser.parse(mBuilder, CommunicationThread.this);
                 if (result != null && result.JSON != null && result.CLASS != null) {
                     List<Integer> removeKeys = new ArrayList<>();
                     for (Integer key : mReceiveFutures.keySet()) {
@@ -212,7 +216,7 @@ public class Axon extends Base {
                                 // This message is a reply for a specific future
                                 continue;
                             }
-                            Object electron = ElectronParser.loadElectron(result, future.CLASS);
+                            final Object electron = ElectronParser.loadElectron(result, future.CLASS);
                             invoke(future, Axon.this, electron, null);
                             if (future instanceof NeuronFuture3)
                                 removeKeys.add(((NeuronFuture3) future).ID);
@@ -249,10 +253,12 @@ public class Axon extends Base {
 
             while (!mSocket.isClosed() && mRunning && !Thread.currentThread().isInterrupted()) {
                 try {
-                    byte[] received = new byte[2048];
+                    Logger.v(Axon.this, "Attempting to receive " + mNextExpectedLength + " bytes...");
+                    byte[] received = new byte[mNextExpectedLength];
                     int readCount = mInput.read(received);
                     if (readCount > 0) {
-                        String receivedStr = new String(received, "UTF-8");
+                        Logger.v(Axon.this, "Received " + readCount + " bytes.");
+                        String receivedStr = new String(received, 0, readCount, "UTF-8");
                         mBuilder.append(receivedStr);
                         trim(mBuilder);
                         checkReceiveReady();

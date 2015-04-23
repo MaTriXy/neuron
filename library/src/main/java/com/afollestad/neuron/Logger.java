@@ -7,6 +7,12 @@ import android.util.Log;
  */
 class Logger {
 
+    private static boolean mLoggingEnabled = false;
+
+    public static void setEnabled(boolean enabled) {
+        mLoggingEnabled = enabled;
+    }
+
     private static String getTag(Object context) {
         if (context instanceof Class)
             return ((Class) context).getSimpleName();
@@ -14,14 +20,17 @@ class Logger {
     }
 
     public static void v(Object context, String message) {
+        if (!mLoggingEnabled) return;
         Log.v(getTag(context), message);
     }
 
     public static void d(Object context, String message) {
+        if (!mLoggingEnabled) return;
         Log.d(getTag(context), message);
     }
 
     public static void e(Object context, String message) {
+        if (!mLoggingEnabled) return;
         Log.e(getTag(context), message);
     }
 }

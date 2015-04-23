@@ -14,9 +14,21 @@ the IPC client connects to it with the localhost loopback address over the port 
 
 The library adds to that by using a simple JSON-based protocol. When you transmit an Electron (message object),
 the object is converted to JSON and sent with a header. This header tells the receiving axon how long the message
-was supposed to be, allowing the library to wait until all data is received if messages are fragmented. 
-This insures there is no limit to the size of messages that can be sent and received, the library will 
-pull messages out of large amounts of data.
+was supposed to be. This length header lets the library receive large fragmented TCP messages and put them all
+back together. The library will intelligently increase or decrease the receiving buffer size to optimize memory usage
+and receive the whole message as fast as possible.
+
+# Gradle Dependency (jCenter)
+
+Easily reference the library in your Android projects using this dependency in your module's `build.gradle` file:
+
+```Gradle
+dependencies {
+    compile 'com.afollestad:neuron:0.1.1'
+}
+```
+
+[ ![Download](https://api.bintray.com/packages/drummer-aidan/maven/neuron/images/download.svg) ](https://bintray.com/drummer-aidan/maven/neuron/_latestVersion)
 
 # Client Side Coding
 

@@ -8,7 +8,9 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView log;
     private EditText mInput;
+    private Button mSend;
     private Axon mAxon;
 
     private void log(String message) {
@@ -83,25 +86,36 @@ public class MainActivity extends AppCompatActivity {
 
         log = (TextView) findViewById(R.id.content);
 
+        mSend = (Button) findViewById(R.id.sendButton);
+        mSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String msg = mInput.getText().toString().trim();
+                log("[SEND]: " + msg);
+                for (int i = 0; i < 3000; i++)
+                    msg += mInput.getText().toString().trim();
+                mAxon.transmit(new Message(msg), new NeuronFuture3<Axon, Message>() {
+                    @Override
+                    public void on(Axon parent, Message result, Exception e) {
+                        if (e != null) {
+                            log("[SEND ERROR]: " + e.getLocalizedMessage());
+                        } else {
+                            log("[SERVER REPLY]: " + result.getContent());
+                        }
+                    }
+                });
+                mInput.setText("");
+            }
+        });
+
         mInput = (EditText) findViewById(R.id.input);
-        mInput.setImeActionLabel(getString(R.string.send), EditorInfo.IME_ACTION_SEND);
+        mInput.setImeActionLabel(getString(R.string.transmit), EditorInfo.IME_ACTION_SEND);
         mInput.setEnabled(false);
         mInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEND) {
-                    String msg = mInput.getText().toString().trim();
-                    mAxon.transmit(new Message(msg), new NeuronFuture3<Axon, Message>() {
-                        @Override
-                        public void on(Axon parent, Message result, Exception e) {
-                            if (e != null) {
-                                log("[SEND ERROR]: " + e.getLocalizedMessage());
-                            } else {
-                                log("[SERVER REPLY]: " + result.getContent());
-                            }
-                        }
-                    });
-                    mInput.setText("");
+                    mSend.performClick();
                     return true;
                 }
                 return false;

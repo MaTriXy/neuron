@@ -29,6 +29,7 @@ public class Terminal extends Base {
     protected NeuronFuture<Axon> mAxonCallback;
     protected NeuronFuture<Terminal> mReadyCallback;
     protected boolean mRunning = true;
+    private boolean mIsReady = false;
 
     private void createServerThread() {
         mServerThread = new Thread(new Runnable() {
@@ -42,6 +43,7 @@ public class Terminal extends Base {
                     invoke(mReadyCallback, Terminal.this, e);
                     return;
                 }
+                mIsReady = true;
                 invoke(mReadyCallback, Terminal.this, null);
                 while (!mServerSocket.isClosed() && mRunning && !Thread.currentThread().isInterrupted()) {
                     try {
@@ -59,6 +61,7 @@ public class Terminal extends Base {
                         invoke(mAxonCallback, null, e);
                     }
                 }
+                mIsReady = false;
                 Logger.d(Terminal.this, "Server thread quit");
                 if (!mServerSocket.isClosed()) {
                     try {
@@ -105,10 +108,14 @@ public class Terminal extends Base {
         }
     }
 
-    public synchronized void startAcceptingClients() {
+    public synchronized void resumeAcceptingClients() {
         if (isAcceptingClients())
             throw new IllegalStateException("The Terminal is already accepting clients.");
         createServerThread();
+    }
+
+    public synchronized final boolean isReady() {
+        return mIsReady;
     }
 
     public synchronized boolean isAcceptingClients() {
