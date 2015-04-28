@@ -61,9 +61,6 @@ Axon client = Neuron.with(12345)
             // e will always be null here, for now
         }
     });
-    
-Electron transmission = // ... create instance of an Electron subclass here
-client.transmit(transmission);
 ```
 
 This code creates a new connection over port 12345, to any listening terminal (server) on the same port.
@@ -73,6 +70,18 @@ in your app with that code. `axon()` returns the client for that port, and it wi
 
 `connection` and `disconnection` are callbacks that notify you of the associated events. `receival` sets
 up a callback to receive `Message` objects from the terminal.
+
+# Sending a Transmission
+
+```Java
+Axon client = // .. a connected axon
+Electron transmission = // ... create instance of an Electron subclass here
+client.transmit(transmission);
+```
+
+Electron objects are discussed in a section below. You can not send a transmission over an Axon until
+ it is connected to a Terminal. If the Axon is a client of a Terminal, you won't need to wait
+ because it will already be connected by the time you get a reference to it.
 
 # Server Side Coding
 
