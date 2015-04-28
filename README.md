@@ -39,23 +39,26 @@ Axon client = Neuron.with(12345)
         @Override
         public void on(Axon result, Exception e) {
             if (e != null) {
-                log("CONNECT ERROR: " + e.getLocalizedMessage());
+                // Connect Error
             } else {
-                log("[CONNECTED].");
-                mInput.setEnabled(true);
+                // Connected
             }
         }
     })
     .receival(Message.class, new NeuronFuture2<Axon, Message>() {
         @Override
         public void on(Axon parent, Message result, Exception e) {
-                            
+            if (e != null) {
+                // Receival error
+            } else {
+                // Received Message object
+            }
         }
     })
     .disconnection(new NeuronFuture<Axon>() {
         @Override
         public void on(Axon result, Exception e) {
-        
+            // e will always be null here, for now
         }
     });
     
@@ -79,13 +82,13 @@ Terminal terminal = Neuron.with(12345)
     .ready(new NeuronFuture<Terminal>() {
         @Override
         public void on(Terminal result, Exception e) {
-            
+            // Server is initialized and ready to accept clients
         }
     })
     .axon(new NeuronFuture<Axon>() {
         @Override
         public void on(Axon result, Exception e) {
-                        
+            // New client (axon)
         }
     });
 ```
