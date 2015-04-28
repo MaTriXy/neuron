@@ -1,10 +1,10 @@
-# Neuron
+# Neuron (Beta)
 
 An simple, efficient, thread-safe, IPC framework for Android.
  
-##### Note
+#### Note
 
-If you can, use Intents, service binding, or other forms of communication in the Android framework.
+If you can, use Intents, Service Binding and Messengers, AIDL, or other forms of communication in the Android framework.
 This library is only intended to speed up and simplify passing objects between different apps.
 
 # How It Works
@@ -58,7 +58,8 @@ Axon client = Neuron.with(12345)
     .disconnection(new NeuronFuture<Axon>() {
         @Override
         public void on(Axon result, Exception e) {
-            // e will always be null here, for now
+            // e will always be null here, for now.
+            // Called when the connection closes.
         }
     });
 ```
@@ -230,3 +231,11 @@ axon.reply(received, reply);
 ```
 
 Currently, replies to replies aren't supported. You shouldn't really need that anyways.
+
+# Logging
+
+To enable detailed logging about events:
+
+```java
+Neuron.setLoggingEnabled(true);
+```
