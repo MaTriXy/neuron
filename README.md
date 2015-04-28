@@ -60,7 +60,7 @@ Axon client = Neuron.with(12345)
     });
     
 Electron transmission = // ... create instance of an Electron subclass here
-axonObj.transmit(transmission);
+client.transmit(transmission);
 ```
 
 This code creates a new connection over port 12345, to any listening terminal (server) on the same port.
