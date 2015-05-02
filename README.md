@@ -66,8 +66,7 @@ Axon client = Neuron.with(12345)
 
 This code creates a new connection over port 12345, to any listening terminal (server) on the same port.
 
-`Neuron.with(12345)` returns a singleton reference, so you get a reference to the same `Neuron` object every
-in your app with that code. `axon()` returns the client for that port, and it will also be the same instance per Neuron object.
+`Neuron.with(12345)` returns a singleton reference, so you get a reference to the same `Neuron` object everywhere in your app. There are however separate singletons for every port (the argument). `axon()` returns the client for that port, and it will also be the same instance per Neuron object.
 
 `connection` and `disconnection` are callbacks that notify you of the associated events. `receival` sets
 up a callback to receive `Message` objects from the terminal.
